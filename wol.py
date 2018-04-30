@@ -1,14 +1,9 @@
 #!/usr/bin/env python3
 #
-# Based on wol.py from http://code.activestate.com/recipes/358449-wake-on-lan/
-# Amended to use configuration file and hostnames
+# forked from bentasker/Wake-On-Lan-Python which was based on 
+# wol.py from http://code.activestate.com/recipes/358449-wake-on-lan/
+# Added remoteWakeUp() to support new mycroft.ai skill
 #
-# Copyright (C) Fadly Tabrani, B Tasker
-#
-# Released under the PSF License See http://docs.python.org/2/license.html
-#
-#
-
 
 import socket
 import struct
@@ -16,9 +11,7 @@ import os
 import sys
 import configparser
 
-
 myconfig = {}
-
 
 def wake_on_lan(host):
     """ Switches on remote computers using WOL. """
@@ -54,35 +47,37 @@ def wake_on_lan(host):
     sock.sendto(send_data, (myconfig['General']['broadcast'], 7))
     return True
 
-
 def loadConfig():
-	""" Read in the Configuration file to get CDN specific settings
-
-	"""
-	global mydir
-	global myconfig
-	Config = configparser.ConfigParser()
-	Config.read(mydir+"/.wol_config.ini")
-	sections = Config.sections()
-	dict1 = {}
-	for section in sections:
-		options = Config.options(section)
-
-		sectkey = section
-		myconfig[sectkey] = {}
-
-
-		for option in options:
-			myconfig[sectkey][option] = Config.get(section,option)
-
-
-	return myconfig # Useful for testing
+""" Read in the Configuration file to get CDN specific settings
+    global mydir
+    global myconfig
+    Config = configparser.ConfigParser()
+    Config.read(mydir+"/.wol_config.ini")
+    sections = Config.sections()
+    dict1 = {}
+    for section in sections:
+        options = Config.options(section)
+        sectkey = section
+        myconfig[sectkey] = {}
+        for option in options:
+            myconfig[sectkey][option] = Config.get(section,option)
+    return myconfig # Useful for testing
 
 def usage():
-	print('Usage: wol.py [hostname]')
+    print('Usage: wol.py [hostname]')
 
-
-
+# added remote call to be used by mycroft.ai skill
+# the mycroft skill will pass the device name from its intent parser
+def remoteWakeUp(wakeUpDeviceName):
+    mydir = os.path.dirname(os.path.abspath(__file__))
+    conf = loadConfig()
+    if not wake_on_lan(wakeUpDeviceName):
+        retMessage = 'The hostname ' + wakeUpDeviceName + ' could not be found'
+    else:
+        retMessage = 'The hostename ' + wakeUpDeviceName + ' has been asked to wake up'
+    print(retMessage)
+    return retMessage
+    
 if __name__ == '__main__':
         mydir = os.path.dirname(os.path.abspath(__file__))
         conf = loadConfig()
@@ -101,7 +96,3 @@ if __name__ == '__main__':
                                 print('Magic packet should be winging its way')
         except:
                 usage()
-
-
-
-

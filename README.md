@@ -28,5 +28,6 @@ The configuration file is just a basic INI file, containing one section per host
 >
 > mac=00:13:0d:e4:60:61
 >
-> \[Server\]>> 
->mac=AB:13:0d:e4:88:42
+> \[Server\] 
+> mac=AB:13:0d:e4:88:42
+>
